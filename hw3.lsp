@@ -176,15 +176,17 @@
 ; this function as the goal testing function, A* will never
 ; terminate until the whole search space is exhausted.
 ;
-; EXPLANATION: I check if there are any 2's in s.
+; EXPLANATION: I check if there are any `box`'s in s.
 (defun goal-test (s)
 	; Input: s -- a state
 	; Output: boolean -- whether s satisfies the goal test
   (cond
 		((null s) t)
-		((> (count 2 (car s)) 0) nil)
+		((> (count box (car s)) 0) nil)
 		(t (goal-test (cdr s))))
 	);end defun
+
+; TODO: Ask if using predefined global varibables ok
 
 ; EXERCISE: Modify this function to return the list of 
 ; sucessor states of s.
@@ -204,13 +206,41 @@
 ; You will need to define the function try-move and decide how to represent UP,DOWN,LEFT,RIGHT.
 ; Any NIL result returned from try-move can be removed by cleanUpList.
 ; 
-;
+; EXPLANATION: 
+(defun get-square (s r c)
+	; Input: s -- a state
+	;				 r -- integer
+	;    		 c -- integer
+	; Output: integer -- content of s at row r and column c
+	)
+
+(defun set-square (s r c v)
+	; Input: s -- a state
+	;   		 r -- integer
+	;  			 c -- integer
+	;				 v -- square content (integer)
+	; Output: a state -- s after replacing the value at square (r, c) with v
+	)
+
+(defun try-move (s d)
+  ; Input: s -- a state
+	; 			 d -- a move direction
+	; Output: a state or nil -- s after moving the keeper by d, or nil if the move
+	;           is invalid
+	)
+
 (defun next-states (s)
+	; Input: s -- a state
+	; Output: a list of states -- the successor states of s
   (let* ((pos (getKeeperPosition s 0))
 	 (x (car pos))
 	 (y (cadr pos))
 	 ;x and y are now the coordinate of the keeper in s.
-	 (result nil)
+	 (result (list
+		 (try-move s 'UP)
+		 (try-move s 'DOWN)
+		 (try-move s 'LEFT)
+		 (try-move s 'RIGHT)))
 	 )
     (cleanUpList result);end
    );end let
@@ -219,14 +249,26 @@
 ; EXERCISE: Modify this function to compute the trivial 
 ; admissible heuristic.
 ;
+; EXPLANATION: 0
 (defun h0 (s)
-  )
+  ; Input: s -- a state
+	; Output: integer -- always 0
+  0)
 
 ; EXERCISE: Modify this function to compute the 
 ; number of misplaced boxes in s.
 ;
+; EXPLANATION: I count the number of `box`'s in each row using `count`, and I
+; sum them up recursively.
 (defun h1 (s)
-  )
+	; Input: s -- a state
+	; Output: integer -- the number of boxes not on goal positions
+	;
+	; This heuristic is admissible, as every out-of-place box requires at least
+	; one push to get it in place.
+  (if (null s)
+		0
+		(+ (count box (car s)) (h1 (cdr s)))))
 
 ; EXERCISE: Change the name of this function to h<UID> where
 ; <UID> is your actual student ID number. Then, modify this 
@@ -237,7 +279,10 @@
 ; The Lisp 'time' function can be used to measure the 
 ; running time of a function call.
 ;
-(defun hUID (s)
+; EXPLANATION: 
+(defun h405462550 (s)
+	; Input: s -- a state
+	; Output: integer -- 
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
