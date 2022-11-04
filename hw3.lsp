@@ -186,8 +186,6 @@
 		(t (goal-test (cdr s))))
 	);end defun
 
-; TODO: Ask if using predefined global varibables ok
-
 ; EXERCISE: Modify this function to return the list of 
 ; sucessor states of s.
 ;
