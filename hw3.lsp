@@ -218,10 +218,9 @@
 	;				 r -- integer
 	;    		 c -- integer
 	; Output: integer -- content of s at row r and column c
-	(let ((num-rows (length s)) (num-cols (length (car s))))
-		(if (or (< r 0) (< c 0) (> r (- num-rows 1)) (> c (- num-cols 1)))
+	(if (out-of-bounds s r c)
 			wall
-			(nth c (nth r s)))))
+		(nth c (nth r s))))
 
 (defun set-square (s r c v)
 	; Input: s -- a state
