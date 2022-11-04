@@ -17,6 +17,11 @@
 ; ))
 
 
+(run-tests "out-of-bounds" (list
+  '(null (out-of-bounds p1 2 3))
+  '(out-of-bounds p18 10 25)
+))
+
 (run-tests "get-square" (list
   '(= 0 (get-square p10 0 5))
   '(= 4 (get-square p1 5 4))

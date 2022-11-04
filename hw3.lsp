@@ -205,6 +205,14 @@
 ; Any NIL result returned from try-move can be removed by cleanUpList.
 ; 
 ; EXPLANATION: 
+(defun out-of-bounds (s r c)
+	; Input: s -- a state
+	;				 r -- integer
+	;    		 c -- integer
+	; Output: boolean -- whether (r,c) is an invalid index of s
+	(let ((num-rows (length s)) (num-cols (length (car s))))
+		(or (< r 0) (< c 0) (> r (- num-rows 1)) (> c (- num-cols 1)))))
+
 (defun get-square (s r c)
 	; Input: s -- a state
 	;				 r -- integer
