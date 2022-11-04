@@ -212,7 +212,11 @@
 	;				 r -- integer
 	;    		 c -- integer
 	; Output: integer -- content of s at row r and column c
-	)
+	(let ((num-rows (length s)) (num-cols (length (car s))))
+		(cond
+			((or (< r 0) (< c 0) (> r (- num-rows 1)) (> c (- num-cols 1))) wall)
+			((= r 0) (car (nthcdr c (car s))))
+			(t (get-square (nthcdr r s) 0 c)))))
 
 (defun set-square (s r c v)
 	; Input: s -- a state
