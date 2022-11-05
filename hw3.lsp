@@ -241,7 +241,23 @@
 	;  			 c -- integer
 	;				 v -- square content (integer)
 	; Output: a state -- s after replacing the value at square (r, c) with v
+	(if (out-of-bounds s r c)
+		s
+		(let*
+			(
+				(rows-before (butlast s (- (num-rows s) r)))
+				(rth-cdr (nthcdr r s))
+				(rows-after (cdr rth-cdr))
+				(rth-row (car rth-cdr))
+				(squares-before (butlast rth-row (- (num-cols s) c)))
+				(cth-cdr (nthcdr c rth-row))
+				(squares-after (cdr cth-cdr))
 	)
+			(append
+				rows-before
+				(cons
+					(append squares-before (cons v squares-after))
+					rows-after)))))
 
 (defun try-move (s d)
   ; Input: s -- a state

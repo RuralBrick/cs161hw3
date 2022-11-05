@@ -10,6 +10,22 @@
   (1 0 3 5 1)
   (1 1 1 1 1)))
 
+(defvar unsolvable_p '(
+  (1 1 1 1 1)
+  (1 0 0 0 1)
+  (1 0 0 0 1)
+  (1 0 3 2 1)
+  (1 1 1 1 1)))
+
+(defvar solved_p1 '(
+  (1 1 1 1 1 1)
+  (1 0 0 0 0 1)
+  (1 0 0 0 0 1)
+  (1 1 0 1 1 1)
+  (1 0 0 0 0 1)
+  (1 0 0 3 5 1)
+  (1 1 1 1 1 1)))
+
 
 ; (run-tests "goal-test" (list
 ;   '(goal-test solved_p)
@@ -36,7 +52,18 @@
 ))
 
 (run-tests "set-square" (list
-  
+  '(equal (set-square unsolvable_p 3 3 5) solved_p)
+  '(equal
+    (set-square
+      (set-square
+        (set-square
+          (set-square
+            p1
+            1 2 0)
+          2 2 0)
+        5 3 3)
+      5 4 5)
+    solved_p1)
 ))
 
 (run-tests "try-move" (list
