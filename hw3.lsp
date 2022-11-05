@@ -176,7 +176,7 @@
 ; this function as the goal testing function, A* will never
 ; terminate until the whole search space is exhausted.
 ;
-; EXPLANATION: I check if there are any `box`'s in s.
+; EXPLANATION: I check if there are any `box`s in s.
 (defun goal-test (s)
 	; Input: s -- a state
 	; Output: boolean -- whether s satisfies the goal test
@@ -244,7 +244,7 @@
 	(if (out-of-bounds s r c)
 		s
 		(let*
-			(
+			( ; Disassemble s
 				(rows-before (butlast s (- (num-rows s) r)))
 				(rth-cdr (nthcdr r s))
 				(rows-after (cdr rth-cdr))
@@ -253,6 +253,7 @@
 				(cth-cdr (nthcdr c rth-row))
 				(squares-after (cdr cth-cdr))
 			)
+			; Reassemble s, but with v at s[r,c]
 			(append
 				rows-before
 				(cons
@@ -260,17 +261,83 @@
 					rows-after)))))
 
 ; XXX: Can only push one box at a time
+; TODO: Add comments
 
-(defun try-move (s d)
+(defun get-in-dir (s kr kc dr dc)
+	(let ((cr (+ kr dr)) (cc (+ kc dc)))
+		(get-square s cr cc)))
+
+(defun keeper-replacement (s kr kc)
+	(let (keeper-square (get-square s kr kc))
+		(cond
+			((isKeeper keeper-square) blank)
+			((isKeeperStar keeper-square) star))))
+
+(defun set-two-squares (s r1 c1 v1 r2 c2 v2)
+	(let (s2 (set-square s r1 c1 v1))
+		(set-square s2 r2 c2 v2)))
+
+(defun set-three-squares (s r1 c1 v1 r2 c2 v2 r3 c3 v3)
+	(let*
+		(
+			(s2 (set-square s r1 c1 v1))
+			(s3 (set-square s2 r2 c2 v2))
+		)
+		(set-square s3 r3 c3 v3)))
+
+(defun try-move (s kr kc dr dc)
   ; Input: s -- a state
-	; 			 d -- a move direction
+	;        kr -- integer (keeper's row)
+	;        kc -- integer (keeper's column)
+	;        dr -- -1, 0, or 1 (change in keeper's row)
+	;        dc -- -1, 0, or 1 (change in keeper's column)
 	; Output: a state or nil -- s after moving the keeper by d, or nil if the move
 	;           is invalid
-	(cond
-		((equal d 'up) )
-		((equal d 'down) )
-		((equal d 'left) )
-		((equal d 'right) )))
+	(let ((content-pushed (get-in-dir s kr kc dr dc)))
+		(cond
+			((isBlank content-pushed))
+			((isWall content-pushed))
+			((isBox content-pushed))
+			((isStar content-pushed))
+			((isBoxStar content-pushed))))
+
+	(let*
+		(
+			(cr (+ kr dr))
+			(cc (+ kc dc))
+			(content-pushed (get-square s cr cc))
+		)
+		(if (isWall content-pushed)
+			nil
+			(let*
+				(
+					(keeper-square (get-square kr kc))
+					(square-after-keeper-leaves (cond
+						((isKeeper keeper-square) blank)
+						((isKeeperStar keeper-square) star)))
+				)))
+
+		(cond
+			((isBlank content-pushed)
+				(set-square
+					(set-square s kr kc square-after-keeper-leaves)
+					cr cc blank))
+			((isStar content-pushed)
+				(set-square (set-square s kr kc square-after-keeper-leaves) cr cc star))
+			((isWall content-pushed) nil)
+			((or (isBox content-pushed) (isBoxStar content-pushed)))))
+	; 1) Find keeper
+	;    - Keeper can be `keeper` or `keeperstar`
+	; 2) Check what is in direction of move
+	;    - `blank`, `star`: can move
+	;    - `wall`: can't move
+	;    - `box`, `boxstar`: need to check one square beyond
+	;      - `blank`, `star`: can move
+	;			 - `wall`, `box`, `boxstar`: can't move
+	;      - `keeper`, `keeperstar`: undefined
+	;    - `keeper`, `keeperstar`: undefined
+	; 3) Create new state of what happens after move
+	)
 
 (defun next-states (s)
 	; Input: s -- a state
@@ -280,10 +347,10 @@
 	 (y (cadr pos))
 	 ;x and y are now the coordinate of the keeper in s.
 	 (result (list
-		 (try-move s 'UP)
-		 (try-move s 'DOWN)
-		 (try-move s 'LEFT)
-		 (try-move s 'RIGHT)))
+		 (try-move s y x -1 0)
+		 (try-move s y x 1 0)
+		 (try-move s y x 0 -1)
+		 (try-move s y x 0 1)))
 	 )
     (cleanUpList result);end
    );end let
@@ -301,7 +368,7 @@
 ; EXERCISE: Modify this function to compute the 
 ; number of misplaced boxes in s.
 ;
-; EXPLANATION: I count the number of `box`'s in each row using `count`, and I
+; EXPLANATION: I count the number of `box`s in each row using `count`, and I
 ; sum them up recursively.
 (defun h1 (s)
 	; Input: s -- a state
