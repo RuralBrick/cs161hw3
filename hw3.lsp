@@ -232,9 +232,9 @@
 	;    		 c -- integer
 	; Output: integer -- content of s at row r and column c
 	(if (out-of-bounds s r c)
-			wall
+		wall
 		(nth c (nth r s))))
-
+	
 (defun set-square (s r c v)
 	; Input: s -- a state
 	;   		 r -- integer
@@ -252,19 +252,25 @@
 				(squares-before (butlast rth-row (- (num-cols s) c)))
 				(cth-cdr (nthcdr c rth-row))
 				(squares-after (cdr cth-cdr))
-	)
+			)
 			(append
 				rows-before
 				(cons
 					(append squares-before (cons v squares-after))
 					rows-after)))))
 
+; XXX: Can only push one box at a time
+
 (defun try-move (s d)
   ; Input: s -- a state
 	; 			 d -- a move direction
 	; Output: a state or nil -- s after moving the keeper by d, or nil if the move
 	;           is invalid
-	)
+	(cond
+		((equal d 'up) )
+		((equal d 'down) )
+		((equal d 'left) )
+		((equal d 'right) )))
 
 (defun next-states (s)
 	; Input: s -- a state
