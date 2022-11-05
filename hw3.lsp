@@ -220,8 +220,11 @@
 	;				 r -- integer
 	;    		 c -- integer
 	; Output: boolean -- whether (r,c) is an invalid index of s
-	(let ((num-rows (length s)) (num-cols (length (car s))))
-		(or (< r 0) (< c 0) (> r (- num-rows 1)) (> c (- num-cols 1)))))
+	(or
+		(< r 0)
+		(< c 0)
+		(> r (- (num-rows s) 1))
+		(> c (- (num-cols s) 1))))
 
 (defun get-square (s r c)
 	; Input: s -- a state
