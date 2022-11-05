@@ -17,6 +17,14 @@
 ; ))
 
 
+(run-tests "num-rows" (list
+  '(= (num-rows p1) 7)
+))
+
+(run-tests "num-cols" (list
+  '(= (num-cols p1) 6)
+))
+
 (run-tests "out-of-bounds" (list
   '(null (out-of-bounds p1 2 3))
   '(out-of-bounds p18 10 25)

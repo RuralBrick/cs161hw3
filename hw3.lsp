@@ -205,6 +205,16 @@
 ; Any NIL result returned from try-move can be removed by cleanUpList.
 ; 
 ; EXPLANATION: 
+(defun num-rows (s)
+	; Input: s -- a state
+	; Output: integer -- number of rows in s
+	(length s))
+
+(defun num-cols (s)
+	; Input: s -- a state
+	; Output: integer -- number of columns (of the first row) of s
+	(length (car s)))
+
 (defun out-of-bounds (s r c)
 	; Input: s -- a state
 	;				 r -- integer
