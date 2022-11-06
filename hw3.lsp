@@ -267,23 +267,35 @@
 	(let ((cr (+ kr dr)) (cc (+ kc dc)))
 		(get-square s cr cc)))
 
+(defun beyond-box (s kr kc dr dc)
+	(let ((cr (+ kr dr dr)) (cc (+ kc dc dc)))
+		(get-square s cr cc)))
+
 (defun keeper-replacement (s kr kc)
 	(let (keeper-square (get-square s kr kc))
 		(cond
 			((isKeeper keeper-square) blank)
 			((isKeeperStar keeper-square) star))))
 
-(defun set-two-squares (s r1 c1 v1 r2 c2 v2)
-	(let (s2 (set-square s r1 c1 v1))
-		(set-square s2 r2 c2 v2)))
+; (defun set-two-squares (s r1 c1 v1 r2 c2 v2)
+; 	(let (s2 (set-square s r1 c1 v1))
+; 		(set-square s2 r2 c2 v2)))
 
-(defun set-three-squares (s r1 c1 v1 r2 c2 v2 r3 c3 v3)
-	(let*
-		(
-			(s2 (set-square s r1 c1 v1))
-			(s3 (set-square s2 r2 c2 v2))
-		)
-		(set-square s3 r3 c3 v3)))
+; (defun set-three-squares (s r1 c1 v1 r2 c2 v2 r3 c3 v3)
+; 	(let*
+; 		(
+; 			(s2 (set-square s r1 c1 v1))
+; 			(s3 (set-square s2 r2 c2 v2))
+; 		)
+; 		(set-square s3 r3 c3 v3)))
+
+(defun set-squares (s lst)
+	(if (null lst)
+		s
+		(let ((r (first lst)) (c (second lst)) (v (third lst)))
+			(set-square (set-squares s (nthcdr 3 lst)) r c v))))
+
+; TODO: Refactor the heck out of this
 
 (defun try-move (s kr kc dr dc)
   ; Input: s -- a state
@@ -295,37 +307,22 @@
 	;           is invalid
 	(let ((content-pushed (get-in-dir s kr kc dr dc)))
 		(cond
-			((isBlank content-pushed))
-			((isWall content-pushed))
-			((isBox content-pushed))
-			((isStar content-pushed))
-			((isBoxStar content-pushed))))
-
-	(let*
-		(
-			(cr (+ kr dr))
-			(cc (+ kc dc))
-			(content-pushed (get-square s cr cc))
-		)
-		(if (isWall content-pushed)
-			nil
-			(let*
-				(
-					(keeper-square (get-square kr kc))
-					(square-after-keeper-leaves (cond
-						((isKeeper keeper-square) blank)
-						((isKeeperStar keeper-square) star)))
-				)))
-
-		(cond
-			((isBlank content-pushed)
-				(set-square
-					(set-square s kr kc square-after-keeper-leaves)
-					cr cc blank))
-			((isStar content-pushed)
-				(set-square (set-square s kr kc square-after-keeper-leaves) cr cc star))
+			((isBlank content-pushed) (set-squares s (list kr kc (keeper-replacement s kr kc) cr cc keeper)))
 			((isWall content-pushed) nil)
-			((or (isBox content-pushed) (isBoxStar content-pushed)))))
+			((isBox content-pushed)
+				(let ((content-after (beyond-box s kr kc dr dc)))
+					(cond
+						((isBlank content-after) (set-squares s (list kr kc (keeper-replacement s kr kc) cr cc keeper cr2 cc2 box)))
+						((isStar content-after) (set-squares s (list kr kc (keeper-replacement s kr kc) cr cc keeper cr2 cc2 boxstar)))
+						(t nil))))
+			((isStar content-pushed) (set-squares s (list kr kc (keeper-replacement s kr kc) cr cc keeperstar)))
+			((isBoxStar content-pushed)
+				(let ((content-after (beyond-box s kr kc dr dc)))
+					(cond
+						((isBlank content-after) (set-squares s (list kr kc (keeper-replacement s kr kc) cr cc keeperstar cr2 cc2 box)))
+						((isStar content-after) (set-squares s (list kr kc (keeper-replacement s kr kc) cr cc keeperstar cr2 cc2 boxstar)))
+						(t nil))))
+			(t nil)))
 	; 1) Find keeper
 	;    - Keeper can be `keeper` or `keeperstar`
 	; 2) Check what is in direction of move
