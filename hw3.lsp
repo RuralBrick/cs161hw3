@@ -334,10 +334,10 @@
 			(content-faced (get-square s cr cc))
 		)
 		(cond
-			((isBlank content-faced) (move s kr kc cr cc keeper))
 			((isWall content-faced) nil)
-			((isBox content-faced) (try-push s kr kc cr cc dr dc keeper))
+			((isBlank content-faced) (move s kr kc cr cc keeper))
 			((isStar content-faced) (move s kr kc cr cc keeperstar))
+			((isBox content-faced) (try-push s kr kc cr cc dr dc keeper))
 			((isBoxStar content-faced) (try-push s kr kc cr cc dr dc keeperstar)))))
 
 (defun next-states (s)
