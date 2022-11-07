@@ -5,7 +5,8 @@
 
 (defvar heuristics (list
   'h1
-  'hShortestStarManhat
+  'hLongestBoxManhat
+  'hLongestStarManhat
 ))
 
 (loop for h in heuristics do
