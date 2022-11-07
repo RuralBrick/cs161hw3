@@ -1,3 +1,5 @@
+;; NOTE: Fatal flaw -- once keeper reaches box, it's always the closest
+
 (load "hw3.lsp")
 (load "manhattan-dist.lsp")
 
@@ -35,6 +37,6 @@
       0
       reduction)))
 
-(defun hShortestStarManhat (s)
+(defun hShortestBoxManhat (s)
   (let ((keeper-pos (getKeeperPosition s 0)))
     (min-dist (box-pos-to-dist keeper-pos (get-box-positions s)))))
