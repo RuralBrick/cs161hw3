@@ -394,10 +394,6 @@
 (defun h405462550 (s)
 	; Input: s -- a state
 	; Output: integer -- 
-
-	; TODO: Try shortest manhat dist from each box to goal, plus shortest dist
-	; from player to box (try to go to as many boxes)
-
   )
 
 ; TODO: Finish explanations
