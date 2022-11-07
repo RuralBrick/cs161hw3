@@ -260,13 +260,64 @@
 					(append squares-before (cons v squares-after))
 					rows-after)))))
 
-; TODO: Add comments
-
 (defun keeper-replacement (s kr kc)
+	; Input: s -- a state
+	;        kr -- integer (keeper's row)
+	;        kc -- integer (keeper's column)
+	; Output: square content -- result of keeper leaving its square
 	(let ((keeper-square (get-square s kr kc)))
 		(cond
 			((isKeeper keeper-square) blank)
 			((isKeeperStar keeper-square) star))))
+
+(defun move (s kr kc cr cc cv)
+	; Input: s -- a state
+	;        kr -- integer (keeper's row)
+	;        kc -- integer (keeper's column)
+	;        cr -- integer (content's row)
+	;        cc -- integer (content's column)
+	;        cv -- square content
+	; Output: a state -- result of keeper stepping into a different square
+	(set-square
+		(set-square
+			s
+			kr kc (keeper-replacement s kr kc))
+		cr cc cv))
+
+(defun try-push (s kr kc cr cc dr dc cv)
+	; Input: s -- a state
+	;        kr -- integer (keeper's row)
+	;        kc -- integer (keeper's column)
+	;        cr -- integer (content's row)
+	;        cc -- integer (content's column)
+	;        dr -- -1, 0, or 1 (change in content's row)
+	;        dc -- -1, 0, or 1 (change in content's column)
+	;        cv -- square content
+	; Output: a state or nil-- result of keeper pushing a box, or nil if the push
+	;           is invalid
+	(let*
+		(
+			(cr2 (+ cr dr))
+			(cc2 (+ cc dc))
+			(beyond-box (get-square s cr2 cc2))
+		)
+		(cond
+			((isBlank beyond-box)
+				(set-square
+					(set-square
+						(set-square
+							s
+							kr kc (keeper-replacement s kr kc))
+						cr cc cv)
+					cr2 cc2 box))
+			((isStar beyond-box)
+				(set-square
+					(set-square
+						(set-square
+							s
+							kr kc (keeper-replacement s kr kc))
+						cr cc cv)
+					cr2 cc2 boxstar)))))
 
 (defun try-move (s kr kc dr dc)
   ; Input: s -- a state
@@ -274,8 +325,8 @@
 	;        kc -- integer (keeper's column)
 	;        dr -- -1, 0, or 1 (change in keeper's row)
 	;        dc -- -1, 0, or 1 (change in keeper's column)
-	; Output: a state or nil -- s after moving the keeper by d, or nil if the move
-	;           is invalid
+	; Output: a state or nil -- s after moving the keeper by (dr, dc), or nil if
+	;           the move is invalid
 	(let*
 		(
 			(cr (+ kr dr))
@@ -283,68 +334,11 @@
 			(content-faced (get-square s cr cc))
 		)
 		(cond
-			((isBlank content-faced)
-				(set-square
-					(set-square
-						s
-						kr kc (keeper-replacement s kr kc))
-					cr cc keeper))
-			((isWall content-faced)
-				nil)
-			((isBox content-faced)
-				(let*
-					(
-						(cr2 (+ cr dr))
-						(cc2 (+ cc dc))
-						(beyond-box (get-square s cr2 cc2))
-					)
-					(cond
-						((isBlank beyond-box)
-							(set-square
-								(set-square
-									(set-square
-										s
-										kr kc (keeper-replacement s kr kc))
-									cr cc keeper)
-								cr2 cc2 box))
-						((isStar beyond-box)
-							(set-square
-								(set-square
-									(set-square
-										s
-										kr kc (keeper-replacement s kr kc))
-									cr cc keeper)
-								cr2 cc2 boxstar)))))
-			((isStar content-faced)
-				(set-square
-					(set-square
-						s
-						kr kc (keeper-replacement s kr kc))
-					cr cc keeperstar))
-			((isBoxStar content-faced)
-				(let*
-					(
-						(cr2 (+ cr dr))
-						(cc2 (+ cc dc))
-						(beyond-boxstar (get-square s cr2 cc2))
-					)
-					(cond
-						((isBlank beyond-boxstar)
-							(set-square
-								(set-square
-									(set-square
-										s
-										kr kc (keeper-replacement s kr kc))
-									cr cc keeperstar)
-								cr2 cc2 box))
-						((isStar beyond-boxstar)
-							(set-square
-								(set-square
-									(set-square
-										s
-										kr kc (keeper-replacement s kr kc))
-									cr cc keeperstar)
-								cr2 cc2 boxstar))))))))
+			((isBlank content-faced) (move s kr kc cr cc keeper))
+			((isWall content-faced) nil)
+			((isBox content-faced) (try-push s kr kc cr cc dr dc keeper))
+			((isStar content-faced) (move s kr kc cr cc keeperstar))
+			((isBoxStar content-faced) (try-push s kr kc cr cc dr dc keeperstar)))))
 
 (defun next-states (s)
 	; Input: s -- a state
