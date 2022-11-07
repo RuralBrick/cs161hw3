@@ -27,10 +27,10 @@
   (1 1 1 1 1 1)))
 
 
-(run-tests "getKeeperPosition" (list
-  '(equal (getKeeperPosition p1 0) '(2 1))
-  '(equal (getKeeperPosition p22 0) '(11 8))
-))
+; (run-tests "getKeeperPosition" (list
+;   '(equal (getKeeperPosition p1 0) '(2 1))
+;   '(equal (getKeeperPosition p22 0) '(11 8))
+; ))
 
 
 ; (run-tests "goal-test" (list
@@ -72,14 +72,13 @@
 ;     solved_p1)
 ; ))
 
-# TODO: Add tests
-(run-tests "try-move" (list
+; (run-tests "try-move" (list
   
-))
+; ))
 
-(run-tests "next-states" (list
+; (run-tests "next-states" (list
   
-))
+; ))
 
 
 ; (run-tests "h0" (list
