@@ -9,5 +9,5 @@
 (defvar p17star-positions (second p17positions))
 
 (run-tests "everything" (list
-  '(hMinBoxStarDistSum p17)
+  '(hMinBoxStarDistSum p22)
 ))
