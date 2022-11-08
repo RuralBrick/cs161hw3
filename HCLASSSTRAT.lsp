@@ -6,14 +6,21 @@
   (if row
     (let ((v (car row)) (rest-positions (scan-squares (cdr row) r (+ c 1))))
       (cond
-        ((isBox v)
-          (list
-            (cons (list c r) (first rest-positions))
-            (second rest-positions)))
         ((isStar v)
           (list
             (first rest-positions)
-            (cons (list c r) (second rest-positions))))
+            (second rest-positions)
+            (cons (list c r) (third rest-positions))))
+        ((isBox v)
+          (list
+            (first rest-positions)
+            (cons (list c r) (second rest-positions))
+            (third rest-positions)))
+        ((or (isKeeper v) (isKeeperStar v))
+          (list
+            (list c r)
+            (second rest-positions)
+            (third rest-positions)))
         (t rest-positions)))))
 
 (defun scan-rows (s r)
@@ -24,8 +31,12 @@
         (rest-positions (scan-rows (cdr s) (+ r 1)))
       )
       (list
-        (append (first row-positions) (first rest-positions))
-        (append (second row-positions) (second rest-positions))))))
+        (let ((kpos (first row-positions)))
+          (if kpos
+            kpos
+            (first rest-positions)))
+        (append (second row-positions) (second rest-positions))
+        (append (third row-positions) (third rest-positions))))))
 
 
 (defun min-box-to-stars-dist (bpos spositions current-min)
@@ -52,12 +63,8 @@
 
 
 (defun hClassStrat (s)
-  (let*
-    (
-      (positions (scan-rows s 0))
-      (bpositions (first positions))
-      (spositions (second positions))
-    )
-    (if (or (null bpositions) (null spositions))
-      0
-      (min-box-star-dist-sum bpositions spositions 0))))
+  (let ((positions (scan-rows s 0)))
+    (let ((bpositions (second positions)) (spositions (third positions)))
+      (if (or (null bpositions) (null spositions))
+        0
+        (min-box-star-dist-sum bpositions spositions 0)))))
