@@ -72,7 +72,7 @@
 (defun hMinBoxStarDistSum (s)
   (let*
     (
-      (positions (scan-rows s 0))
+      (positions (get-box-and-star-positions s))
       (box-positions (first positions))
       (star-positions (second positions))
     )
