@@ -7,6 +7,7 @@
   'h0
   'h1
   'hMinBoxStarDistSum
+  'hClassStrat
 ))
 
 (loop for h in heuristics do
