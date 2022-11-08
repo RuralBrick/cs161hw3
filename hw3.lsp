@@ -204,7 +204,14 @@
 ; You will need to define the function try-move and decide how to represent UP,DOWN,LEFT,RIGHT.
 ; Any NIL result returned from try-move can be removed by cleanUpList.
 ; 
-; EXPLANATION: 
+; EXPLANATION: After `next-states` uses `try-move` in every direction,
+; `try-move` first checks what is in the direction the keeper tries to move.
+; This breaks down into three major cases: a wall, an unoccupied space, and a
+; box. It is invalid for the keeper to move a wall. The keeper readily moves
+; into an unoccupied space. Lastly, we must check what it behind a box, as the
+; keeper can only push it if the space beyond is unoccupied. `move` and
+; `try-push` are defined to handle the variations of unoccupied spaces and boxes
+; (i.e. box vs boxStar). Every other function is a minor helper function.
 (defun num-rows (s)
 	; Input: s -- a state
 	; Output: integer -- number of rows in s
@@ -390,13 +397,139 @@
 ; The Lisp 'time' function can be used to measure the 
 ; running time of a function call.
 ;
-; EXPLANATION: 
+; EXPLANATION: My top level function is made up roughly two halves: the first
+; half gets the positions of the keeper, all the boxes, and all the stars in s,
+; while the second half calculates and aggregates various Manhattan distances
+; between the positions. `scan-squares` and `scan-rows` do a single pass over s
+; to get all of the positions listed above. `min-box-to-stars-dist` and
+; `min-box-star-dist-sum` are used to find the closest distances between boxes
+; and stars and then add them all up. `max-keeper-box-dist` finds the maximum
+; distance from the keeper to a box.
+;
+; This heuristic is admissable because every box needs to be pushed to at least
+; its closest star and the keeper must come into contact with every box (not on
+; a star).
+(defun scan-squares (row r c)
+	; Input: s -- a state
+	;        r -- integer
+	; Output: a list of a position and two lists of positions -- the keeper's
+	;           position, boxes' positions, and stars' positions in row,
+	;           respectively
+  (if row
+    (let ((v (car row)) (rest-positions (scan-squares (cdr row) r (+ c 1))))
+      (cond
+        ((isStar v)
+          (list
+            (first rest-positions)
+            (second rest-positions)
+            (cons (list c r) (third rest-positions))))
+        ((isBox v)
+          (list
+            (first rest-positions)
+            (cons (list c r) (second rest-positions))
+            (third rest-positions)))
+        ((or (isKeeper v) (isKeeperStar v))
+          (list
+            (list c r)
+            (second rest-positions)
+            (third rest-positions)))
+        (t rest-positions)))))
+
+(defun scan-rows (s r)
+	; Input: s -- a state
+	;        r -- integer
+	; Output: a list of a position and two lists of positions -- the keeper's
+	;           position, boxes' positions, and stars' positions in s,
+	;           respectively
+  (if s
+    (let
+      (
+        (row-positions (scan-squares (car s) r 0))
+        (rest-positions (scan-rows (cdr s) (+ r 1)))
+      )
+      (list
+        (let ((kpos (first row-positions)))
+          (if kpos
+            kpos
+            (first rest-positions)))
+        (append (second row-positions) (second rest-positions))
+        (append (third row-positions) (third rest-positions))))))
+
+
+(defun manhattan-dist (pos1 pos2)
+	; Input: pos1 -- a position (a list of two integers)
+	;        pos2 -- a position
+	; Output: integer -- the Manhattan distance between pos1 and pos2
+  (let
+    (
+      (x1 (first pos1))
+      (y1 (second pos1))
+      (x2 (first pos2))
+      (y2 (second pos2))
+    )
+    (+ (abs (- x1 x2)) (abs (- y1 y2)))))
+
+
+(defun min-box-to-stars-dist (bpos spositions current-min)
+	; Input: bpos -- a position
+	;        spositions -- a list of positions
+	;        current-min -- integer
+	; Output: integer -- the minimum Manhattan distance from bpos to any position
+	;           in spositions
+  (if (null spositions)
+    current-min
+    (min-box-to-stars-dist
+      bpos
+      (cdr spositions)
+      (min (manhattan-dist bpos (car spositions)) current-min))))
+
+(defun min-box-star-dist-sum (bpositions spositions sum)
+	; Input: bpositions -- a list of positions (of boxes)
+	;        spositions -- a list of positions (of stars)
+	;        sum -- integer
+	; Ouput: integer -- the sum of the minimum Manhattan distances from every
+	;          position in bpositions to any position in spositions
+  (if (null bpositions)
+    sum
+    (let ((bpos (car bpositions)))
+      (min-box-star-dist-sum
+        (cdr bpositions)
+        spositions
+        (+
+          (min-box-to-stars-dist
+            bpos
+            (cdr spositions)
+            (manhattan-dist bpos (car spositions)))
+          sum)))))
+
+
+(defun max-keeper-box-dist (kpos bpositions current-max)
+	; Input: kpos -- a position
+	;        bpositions -- a list of positions
+	;        current-max -- integer
+	; Output: integer -- the maximum Manhattan distance from kpos to any position
+	;           in bpositions
+  (if (null bpositions)
+    current-max
+    (max-keeper-box-dist
+      kpos
+      (cdr bpositions)
+      (max (manhattan-dist kpos (car bpositions)) current-max))))
+
+
 (defun h405462550 (s)
 	; Input: s -- a state
-	; Output: integer -- 
-  )
-
-; TODO: Finish explanations
+	; Output: integer -- the sum of the minimum Manhattan distances from every box
+	;           to any star, plus the maximum Manhattan distance from the keeper
+	;           to any box
+  (let ((positions (scan-rows s 0)))
+    (let ((bpositions (second positions)) (spositions (third positions)))
+      (if (or (null bpositions) (null spositions))
+        0
+        (min-box-star-dist-sum
+          bpositions
+          spositions
+          (max-keeper-box-dist (first positions) bpositions 0))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
