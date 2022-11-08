@@ -62,9 +62,21 @@
           sum)))))
 
 
+(defun max-keeper-box-dist (kpos bpositions current-max)
+  (if (null bpositions)
+    current-max
+    (max-keeper-box-dist
+      kpos
+      (cdr bpositions)
+      (max (manhattan-dist kpos (car bpositions)) current-max))))
+
+
 (defun hClassStrat (s)
   (let ((positions (scan-rows s 0)))
     (let ((bpositions (second positions)) (spositions (third positions)))
       (if (or (null bpositions) (null spositions))
         0
-        (min-box-star-dist-sum bpositions spositions 0)))))
+        (min-box-star-dist-sum
+          bpositions
+          spositions
+          (max-keeper-box-dist (first positions) bpositions 0))))))
